@@ -25,6 +25,11 @@ Main objective is to keep only artist Lana Del Rey records in the JSON file and 
 
 The first stage of the project is performed before loading the data into Oracle.
 
+![Data Cleaning Process](scripts/clean-spotify-json-img.png)
+
+![Data Validation Process](scripts/validate-spotify-json-img.png)
+
+
 ---
 
 ## 👩🏻‍💻 Author
