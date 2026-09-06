@@ -175,6 +175,7 @@ The resulting dataset is trimmed down to 11 core fields:
 
 > **Execution Telemetry:** Upon completion, the script outputs runtime metrics detailing the *Original record count*, *Selected artist*, *Retained vs. removed records*, and the *Target output destination*.
 
+![Python Data Cleaning Script](screenshots/clean-spotify-json-img.png)
 ---
 
 ## 4. Data Validation
@@ -193,16 +194,17 @@ Following the transformation layer, a dedicated validation suite is executed to 
 
 ###  Validation Output
 When executed, the validation harness outputs the following status checks:
-
+<!--
 ```diff
 ✓ All records belong to Lana Del Rey
 ✓ No records have a NULL track_name
 ✓ All records contain exactly 11 fields
 ✓ JSON validation successful
 ```
-
+-->
 * **Python Validation Script:** [`python/validate_spotify_json.py`](python/validate_spotify_json.py)
 
+![Data Validation Harness](screenshots/validate-spotify-json-img.png)
 ---
 
 ## 5. Docker & Oracle Data Ingestion
