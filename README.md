@@ -216,7 +216,7 @@ To ensure scalability and performance, the verified JSON dataset is bypassed aro
 docker cp "C:\Users\Acer\Desktop\SQL\Data\Streaming_History_Audio_2021_LANA_DEL_REY_CLEAN.json" oracle-db-free:/tmp/spotify_staging.json
 ```
 
-> 💡 **Design Architecture Decision:** Loading large JSON files directly through a client GUI can cause memory bottlenecks. Moving the payload directly into the container's virtual memory (`/tmp`) shifts processing overhead directly to the database server layer.
+> **Design Architecture Decision:** Loading large JSON files directly through a client GUI caused me memory bottlenecks. Moving the payload directly into the container's virtual memory (`/tmp`) shifts processing overhead directly to the database server layer.
 
 ---
 
