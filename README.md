@@ -58,6 +58,9 @@ Spotify Extended Streaming History
 ```
 Spotify-Advanced-Data-Analytics/
 │
+├── datasets/
+│   └── Streaming_History_Audio_2021_LANA_DEL_REY_CLEAN.json
+│
 ├── python/
 │   ├── clean_spotify_json.py
 │   └── validate_spotify_json.py
