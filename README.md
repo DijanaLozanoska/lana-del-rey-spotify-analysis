@@ -137,7 +137,7 @@ The raw Spotify data contains records beyond the scope of this analysis, therefo
 
 ---
 
-## 3. 🐍 Python Data Cleaning
+## 3. Python Data Cleaning
 
 The first processing stage was performed locally on a macOS environment using Python and Visual Studio Code. The script loads the raw Spotify JSON payload, parses the stream collection, and filters it down to the target scope.
 
@@ -239,23 +239,9 @@ Leveraging Oracle’s native `JSON_TABLE` relational expression engine, the stat
 ### Relational Staging Layout
 The target relational columns correspond directly to the source attributes:
 
-```sql
-ALTER TABLE staging_spotify_history ADD (
-    timestamp_str  VARCHAR2(50),
-    platform       VARCHAR2(100),
-    ms_played      NUMBER,
-    country        VARCHAR2(10),
-    track_name     VARCHAR2(255),
-    artist_name    VARCHAR2(255),
-    album_name     VARCHAR2(255),
-    reason_start   VARCHAR2(100),
-    reason_end     VARCHAR2(100),
-    shuffle        VARCHAR2(10),
-    skipped        VARCHAR2(10)
-);
-```
+da se dodade screenshot
 
-This persistent, relational staging baseline serves as the raw source of truth for all subsequent SQL transformations and **PL/SQL dimensional modeling workflows**.
+This persistent, relational staging baseline serves as the raw source of truth for all subsequent SQL transformations and PL/SQL dimensional modeling workflows.
 
 ---
 
