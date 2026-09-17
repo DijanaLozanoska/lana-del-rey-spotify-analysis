@@ -229,20 +229,29 @@ docker cp "C:\Users\Acer\Desktop\SQL\Data\Streaming_History_Audio_2021_LANA_DEL_
 
 Two tables are created before the LOB binding step. `raw_json_load` acts as a bucket table to hold the raw JSON file as a `CLOB`, with a `CHECK` constraint (`raw_doc IS JSON`) enforcing that the content is valid JSON. `spotify_json_staging` is the structured relational destination table that the parsed JSON fields will ultimately be loaded into.
 
-* **Python Cleaning Script:** [`python/clean_spotify_json.py`](python/clean_spotify_json.py)
-* **Python Cleaning Script:** [`python/clean_spotify_json.py`](python/clean_spotify_json.py)
+* **Staging Table Setup Script:** [`python/clean_spotify_json.py`](python/clean_spotify_json.py)
+* **Staging Table Setup Validation Script:** 
 
-### Data Flow Architecture
+ **Server-Side LOB Binding:**
 
-da se dodade arhitekturata 
+With the tables in place, the raw JSON file itself needs to get into `raw_json_load.raw_doc`. An Oracle `DIRECTORY` object is created pointing at the container's `/tmp` path, then a PL/SQL block uses `DBMS_LOB` to stream the raw JSON file directly into the `CLOB` column via a `BFILE` locator. This creates a database-side ingestion layer between the source JSON file and the relational staging tables.
 
-This decoupled staging abstraction layer separates the raw, unstructured file stream from subsequent relational staging logic.
+* **Server-Side LOB Binding Script:**
+* **Server-Side LOB Binding Validation Script:**
 
----
+**JSON-to-Relational Parsing:**
+
+With the raw JSON sitting in `raw_json_load`, `JSON_TABLE` is used to shred the top-level array (`$[*]`) into rows, mapping each field to its corresponding column via a `PATH` expression. The result is inserted directly into `spotify_json_staging`.
+
+
+
 
 ## 7. JSON to Relational Mapping
 
 Leveraging Oracle’s native `JSON_TABLE` relational expression engine, the static JSON array layout is broken down and mapped dynamically into relational database table rows.
+
+* **Step 1 — Staging Table Setup Script:** [`sql/01_staging_tables_setup.sql`](sql/01_staging_tables_setup.sql)
+
 
 ### Relational Staging Layout
 The target relational columns correspond directly to the source attributes:
