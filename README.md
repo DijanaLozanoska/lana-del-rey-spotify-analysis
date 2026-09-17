@@ -73,7 +73,7 @@ Spotify-Advanced-Data-Analytics/
 │   └── 05_analysis_queries.sql
 │
 ├── powerbi/
-│   ├── measures.dax
+│   ├── dax-measures.txt
 │   └── Spotify_Lana_Del_Rey_Analysis.pbix
 │
 ├── screenshots/
@@ -215,6 +215,7 @@ To ensure scalability and performance, the verified JSON dataset is bypassed aro
 # Transferring the dataset from the host machine straight to the container filesystem
 docker cp "C:\Users\Acer\Desktop\SQL\Data\Streaming_History_Audio_2021_LANA_DEL_REY_CLEAN.json" oracle-db-free:/tmp/spotify_staging.json
 ```
+![Staging Buffer](screenshots/docker-and-oracle-data-ingestion-img.png)
 
 > **Design Architecture Decision:** Loading large JSON files directly through a client GUI caused me memory bottlenecks. Moving the payload directly into the container's virtual memory (`/tmp`) shifts processing overhead directly to the database server layer.
 
