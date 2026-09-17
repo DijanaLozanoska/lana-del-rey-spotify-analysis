@@ -66,11 +66,13 @@ Spotify-Advanced-Data-Analytics/
 │   └── validate_spotify_json.py
 │
 ├── sql/
-│   ├── 01_create_staging.sql
-│   ├── 02_load_json.sql
-│   ├── 03_create_dimensions.sql
-│   ├── 04_create_fact.sql
-│   └── 05_analysis_queries.sql
+│   ├── 01_staging-tables-setup.sql
+│   ├── 02_load_spotify_json_to_clob.sql
+│   ├── 03_spotify_json_staging.sql
+│   ├── 04_oracle_staging_validation
+│   ├── 05_
+│   ├── 06_
+│   └── 07_analysis_queries.sql (posle vo materialized views)
 │
 ├── powerbi/
 │   ├── dax-measures.txt
@@ -207,7 +209,7 @@ When executed, the validation harness outputs the following status checks:
 ![Data Validation Harness](screenshots/validate-spotify-json-img.png)
 ---
 
-## 5. Docker & Oracle Data Ingestion
+## 5. Docker and Oracle Data Ingestion
 
 To ensure scalability and performance, the verified JSON dataset is bypassed around the graphical interface client (SQL Developer) and injected directly into the Oracle Database container core.
 
@@ -223,7 +225,12 @@ docker cp "C:\Users\Acer\Desktop\SQL\Data\Streaming_History_Audio_2021_LANA_DEL_
 
 ## 6. Oracle JSON Staging
 
-The ingested JSON document is mounted into Oracle using a Character Large Object (`CLOB`) data type. An Oracle Directory object maps directly to the containerized `/tmp` file path, allowing native file system streaming via database pointers.
+ **Staging Table Setup:**
+
+Two tables are created before the LOB binding step. `raw_json_load` acts as a bucket table to hold the raw JSON file as a `CLOB`, with a `CHECK` constraint (`raw_doc IS JSON`) enforcing that the content is valid JSON. `spotify_json_staging` is the structured relational destination table that the parsed JSON fields will ultimately be loaded into.
+
+* **Python Cleaning Script:** [`python/clean_spotify_json.py`](python/clean_spotify_json.py)
+* **Python Cleaning Script:** [`python/clean_spotify_json.py`](python/clean_spotify_json.py)
 
 ### Data Flow Architecture
 
