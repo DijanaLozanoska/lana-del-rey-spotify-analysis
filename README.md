@@ -229,7 +229,7 @@ docker cp "C:\Users\Acer\Desktop\SQL\Data\Streaming_History_Audio_2021_LANA_DEL_
 
 Two tables are created before the LOB binding step. `raw_json_load` acts as a bucket table to hold the raw JSON file as a `CLOB`, with a `CHECK` constraint (`raw_doc IS JSON`) enforcing that the content is valid JSON. `spotify_json_staging` is the structured relational destination table that the parsed JSON fields will ultimately be loaded into.
 
-* **Staging Table Setup Script:** [`python/clean_spotify_json.py`](python/clean_spotify_json.py)
+* **Staging Table Setup Script:** [`sql/01_staging_tables_setup.sql`](sql/01_staging_tables_setup.sql)
 * **Staging Table Setup Validation Script:** 
 
  **Server-Side LOB Binding:**
@@ -244,13 +244,13 @@ With the tables in place, the raw JSON file itself needs to get into `raw_json_l
 With the raw JSON sitting in `raw_json_load`, `JSON_TABLE` is used to shred the top-level array (`$[*]`) into rows, mapping each field to its corresponding column via a `PATH` expression. The result is inserted directly into `spotify_json_staging`.
 
 
-
+<!--
 
 ## 7. JSON to Relational Mapping
 
 Leveraging Oracle’s native `JSON_TABLE` relational expression engine, the static JSON array layout is broken down and mapped dynamically into relational database table rows.
 
-* **Step 1 — Staging Table Setup Script:** [`sql/01_staging_tables_setup.sql`](sql/01_staging_tables_setup.sql)
+* **Step 1 — Staging Table Setup Script:** 
 
 
 ### Relational Staging Layout
@@ -264,7 +264,7 @@ This persistent, relational staging baseline serves as the raw source of truth f
 
 
 
-<!--
+
 ## 📂 Dataset
 
 Main objective is to keep only artist Lana Del Rey records in the JSON file and remove private metadata.
