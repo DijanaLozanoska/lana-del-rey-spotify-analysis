@@ -69,8 +69,8 @@ spotify-advanced-data-analytics/
 │   ├── 01_staging_tables_setup.sql
 │   ├── 02_load_spotify_json_to_clob.sql
 │   ├── 03_spotify_json_staging.sql
-│   ├── 04_oracle_staging_validation
-│   ├── 05_
+│   ├── 04_oracle_staging_validation.sql
+│   ├── 05_star_schema_ddl.sql
 │   ├── 06_
 │   └── 07_analysis_queries.sql (posle vo materialized views)
 │
@@ -94,11 +94,7 @@ spotify-advanced-data-analytics/
 └── README.md
 
 ```
-<!--
-
-> Personal Spotify listening-history data is not included in the public repository. The repository contains the processing logic, SQL scripts, documentation and selected screenshots instead.
-
--->
+> Personal Spotify listening-history data is not included in the public repository. The repository contains the processing logic, SQL scripts, documentation, and selected screenshots instead.
 
 ---
 
@@ -258,7 +254,61 @@ A few sanity checks confirm the load and parse steps worked as expected before m
 
 ## 7. Core Star Schema DDL Design
 
-The following script implements Star Schema with robust constraints, indexing, and sequence generation.
+The validated staging data is modelled into a dimensional star schema — one central fact table surrounded by descriptive dimension tables, optimized for BI/analytics tooling such as Power BI.
+
+Schema Overview
+1 Fact table — granular, event-level streaming records
+3 Dimension tables — descriptive context (songs, albums, platforms)
+
+
+### Entity Relationship Diagram
+
+\`\`\`mermaid
+erDiagram
+    DIM_ALBUMS ||--o{ DIM_SONGS : "contains"
+    DIM_ALBUMS ||--o{ FACT_STREAMING_HISTORY : "played from"
+    DIM_SONGS ||--o{ FACT_STREAMING_HISTORY : "played as"
+    DIM_PLATFORMS ||--o{ FACT_STREAMING_HISTORY : "streamed on"
+
+    DIM_ALBUMS {
+        number album_id PK
+        varchar2 album_name
+        number release_year
+        varchar2 era
+        number total_tracks
+        date created_at
+    }
+
+    DIM_SONGS {
+        number song_id PK
+        varchar2 track_name
+        number album_id FK
+        number duration_ms
+        number track_number
+        char is_explicit
+    }
+
+    DIM_PLATFORMS {
+        number platform_id PK
+        varchar2 raw_platform
+        varchar2 clean_platform
+        varchar2 os_name
+    }
+
+    FACT_STREAMING_HISTORY {
+        number stream_id PK
+        number song_id FK
+        number album_id FK
+        number platform_id FK
+        timestamp played_at
+        date play_date
+        number ms_played
+        number minutes_played
+        number skipped_flag
+        number shuffle_flag
+    }
+\`\`\`
+
 
 ## 8.Database Programming (PL/SQL Transformation Layer)
 
