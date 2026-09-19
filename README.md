@@ -236,13 +236,22 @@ Two tables are created before the LOB binding step. `raw_json_load` acts as a bu
 
 With the tables in place, the raw JSON file itself needs to get into `raw_json_load.raw_doc`. An Oracle `DIRECTORY` object is created pointing at the container's `/tmp` path, then a PL/SQL block uses `DBMS_LOB` to stream the raw JSON file directly into the `CLOB` column via a `BFILE` locator. This creates a database-side ingestion layer between the source JSON file and the relational staging tables.
 
-* **Server-Side LOB Binding Script:**
+* **Server-Side LOB Binding Script:** [`sql/02_load_spotify_json_to_clob.sql`]
 * **Server-Side LOB Binding Validation Script:**
 
 **JSON-to-Relational Parsing:**
 
-With the raw JSON sitting in `raw_json_load`, `JSON_TABLE` is used to shred the top-level array (`$[*]`) into rows, mapping each field to its corresponding column via a `PATH` expression. The result is inserted directly into `spotify_json_staging`.
+Evaluated the native relational database engine `JSON_TABLE` function to extract structured fields out of the scalar JSON array. The relational stage parses 15,000+ data rows instantly with near-zero client processing overhead.
 
+**Parallel Parsing Query Script:** [`sql/03_spotify_json_staging.sql`]
+**Parallel Parsing Query Validation Script:**
+
+
+**Validation:**
+
+A few sanity checks confirm the load and parse steps worked as expected before moving on to analysis.
+
+**Staging Relational Environment Validation Script:** [`sql/04_oracle_staging_validation.sql`]
 
 <!--
 
