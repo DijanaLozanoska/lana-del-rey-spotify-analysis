@@ -56,7 +56,7 @@ Spotify Extended Streaming History
 ## 📂 Project Structure
 
 ```
-Spotify-Advanced-Data-Analytics/
+spotify-advanced-data-analytics/
 │
 ├── datasets/
 │   └── Streaming_History_Audio_2021_LANA_DEL_REY_CLEAN.json
@@ -66,7 +66,7 @@ Spotify-Advanced-Data-Analytics/
 │   └── validate_spotify_json.py
 │
 ├── sql/
-│   ├── 01_staging-tables-setup.sql
+│   ├── 01_staging_tables_setup.sql
 │   ├── 02_load_spotify_json_to_clob.sql
 │   ├── 03_spotify_json_staging.sql
 │   ├── 04_oracle_staging_validation
@@ -79,10 +79,14 @@ Spotify-Advanced-Data-Analytics/
 │   └── Spotify_Lana_Del_Rey_Analysis.pbix
 │
 ├── screenshots/
-│   ├── raw-data.png
-│   ├── python-cleaning.png
-│   ├── python-validation.png
-│   ├── docker-file-transfer.png
+│   ├── 01-raw-data.png
+│   ├── 02-python-cleaning.png
+│   ├── 03-python-validation.png
+│   ├── 04-docker-file-transfer.png
+│   ├── 05-sql-step-1-staging-table-setup-img.png
+│   ├── 06-
+│   ├── 07-
+│   ├── 08-
 │   ├── oracle-staging.png
 │   ├── data-model.png
 │   └── powerbi-dashboard.png
@@ -248,7 +252,7 @@ Evaluated the native relational database engine `JSON_TABLE` function to extract
 
 **Validation:**
 
-A few sanity checks confirm the load and parse steps worked as expected before moving on to analysis.
+A few sanity checks confirm the load and parse steps worked as expected before moving on to Star Schema design.
 
 **Staging Relational Environment Validation Script:** [`sql/04_oracle_staging_validation.sql`](sql/04_oracle_staging_validation.sql)
 
