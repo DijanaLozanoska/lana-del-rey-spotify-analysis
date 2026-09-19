@@ -230,8 +230,7 @@ docker cp "C:\Users\Acer\Desktop\SQL\Data\Streaming_History_Audio_2021_LANA_DEL_
 Two tables are created before the LOB binding step. `raw_json_load` acts as a bucket table to hold the raw JSON file as a `CLOB`, with a `CHECK` constraint (`raw_doc IS JSON`) enforcing that the content is valid JSON. `spotify_json_staging` is the structured relational destination table that the parsed JSON fields will ultimately be loaded into.
 
 * **Staging Table Setup Script:** [`sql/01_staging_tables_setup.sql`](sql/01_staging_tables_setup.sql)
-* **Staging Table Setup Validation Script:** 
-
+ 
 ![Staging Table Setup Validation Script](screenshots/sql-step-1-staging-table-setup-img.png)
 
  **Server-Side LOB Binding:**
@@ -239,14 +238,12 @@ Two tables are created before the LOB binding step. `raw_json_load` acts as a bu
 With the tables in place, the raw JSON file itself needs to get into `raw_json_load.raw_doc`. An Oracle `DIRECTORY` object is created pointing at the container's `/tmp` path, then a PL/SQL block uses `DBMS_LOB` to stream the raw JSON file directly into the `CLOB` column via a `BFILE` locator. This creates a database-side ingestion layer between the source JSON file and the relational staging tables.
 
 * **Server-Side LOB Binding Script:** [`sql/02_load_spotify_json_to_clob.sql`](sql/02_load_spotify_json_to_clob.sql)
-* **Server-Side LOB Binding Validation Script:**
 
 **JSON-to-Relational Parsing:**
 
 Evaluated the native relational database engine `JSON_TABLE` function to extract structured fields out of the scalar JSON array. The relational stage parses 15,000+ data rows instantly with near-zero client processing overhead.
 
 **Parallel Parsing Query Script:** [`sql/03_spotify_json_staging.sql`](sql/03_spotify_json_staging.sql)
-**Parallel Parsing Query Validation Script:**
 
 
 **Validation:**
@@ -254,6 +251,12 @@ Evaluated the native relational database engine `JSON_TABLE` function to extract
 A few sanity checks confirm the load and parse steps worked as expected before moving on to analysis.
 
 **Staging Relational Environment Validation Script:** [`sql/04_oracle_staging_validation.sql`](sql/04_oracle_staging_validation.sql)
+
+## 7. Core Star Schema DDL Design
+
+The following script implements Star Schema with robust constraints, indexing, and sequence generation.
+
+## 8.Database Programming (PL/SQL Transformation Layer)
 
 <!--
 
