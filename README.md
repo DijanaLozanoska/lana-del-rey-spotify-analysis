@@ -261,53 +261,9 @@ Schema Overview
 3 Dimension tables — descriptive context (songs, albums, platforms)
 
 
-### Entity Relationship Diagram
 
-\`\`\`mermaid
-erDiagram
-    DIM_ALBUMS ||--o{ DIM_SONGS : "contains"
-    DIM_ALBUMS ||--o{ FACT_STREAMING_HISTORY : "played from"
-    DIM_SONGS ||--o{ FACT_STREAMING_HISTORY : "played as"
-    DIM_PLATFORMS ||--o{ FACT_STREAMING_HISTORY : "streamed on"
 
-    DIM_ALBUMS {
-        number album_id PK
-        varchar2 album_name
-        number release_year
-        varchar2 era
-        number total_tracks
-        date created_at
-    }
 
-    DIM_SONGS {
-        number song_id PK
-        varchar2 track_name
-        number album_id FK
-        number duration_ms
-        number track_number
-        char is_explicit
-    }
-
-    DIM_PLATFORMS {
-        number platform_id PK
-        varchar2 raw_platform
-        varchar2 clean_platform
-        varchar2 os_name
-    }
-
-    FACT_STREAMING_HISTORY {
-        number stream_id PK
-        number song_id FK
-        number album_id FK
-        number platform_id FK
-        timestamp played_at
-        date play_date
-        number ms_played
-        number minutes_played
-        number skipped_flag
-        number shuffle_flag
-    }
-\`\`\`
 
 
 ## 8.Database Programming (PL/SQL Transformation Layer)
