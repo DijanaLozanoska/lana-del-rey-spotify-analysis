@@ -94,7 +94,7 @@ spotify-advanced-data-analytics/
 └── README.md
 
 ```
-> Personal Spotify listening-history data is not included in the public repository. The repository contains the processing logic, SQL scripts, documentation, and selected screenshots instead.
+> Personal Spotify listening-history data is not included in the public repository. The repository contains the processing logic, SQL scripts, documentation and selected screenshots instead.
 
 ---
 
@@ -266,7 +266,7 @@ Schema Overview
 
 
 
-## 8.Database Programming (PL/SQL Transformation Layer)
+## 8. Database Programming (PL/SQL Transformation Layer)
 
 <!--
 
