@@ -177,7 +177,7 @@ The resulting dataset is trimmed down to 11 core fields:
 
 > **Execution Telemetry:** Upon completion, the script outputs runtime metrics detailing the *Original record count*, *Selected artist*, *Retained vs. removed records*, and the *Target output destination*.
 
-![Python Data Cleaning Script](screenshots/clean-spotify-json-img.png)
+![Python Data Cleaning Script](screenshots/02-clean-spotify-json-img.png)
 ---
 
 ## 4. Data Validation
@@ -206,7 +206,7 @@ When executed, the validation harness outputs the following status checks:
 -->
 * **Python Validation Script:** [`python/validate_spotify_json.py`](python/validate_spotify_json.py)
 
-![Data Validation Harness](screenshots/validate-spotify-json-img.png)
+![Data Validation Harness](screenshots/03-validate-spotify-json-img.png)
 ---
 
 ## 5. Docker and Oracle Data Ingestion
@@ -217,7 +217,7 @@ To ensure scalability and performance, the verified JSON dataset is bypassed aro
 # Transferring the dataset from the host machine straight to the container filesystem
 docker cp "C:\Users\Acer\Desktop\SQL\Data\Streaming_History_Audio_2021_LANA_DEL_REY_CLEAN.json" oracle-db-free:/tmp/spotify_staging.json
 ```
-![Staging Buffer](screenshots/docker-and-oracle-data-ingestion-img.png)
+![Staging Buffer](screenshots/04-docker-and-oracle-data-ingestion-img.png)
 
 > **Design Architecture Decision:** Loading large JSON files directly through a client GUI caused me memory bottlenecks. Moving the payload directly into the container's virtual memory (`/tmp`) shifts processing overhead directly to the database server layer.
 
@@ -231,7 +231,7 @@ Two tables are created before the LOB binding step. `raw_json_load` acts as a bu
 
 * **Staging Table Setup Script:** [`sql/01_staging_tables_setup.sql`](sql/01_staging_tables_setup.sql)
  
-![Staging Table Setup Validation Script](screenshots/sql-step-1-staging-table-setup-img.png)
+![Staging Table Setup Validation Script](screenshots/05-sql-step-1-staging-table-setup-img.png)
 
  **Server-Side LOB Binding:**
 
@@ -239,7 +239,7 @@ With the tables in place, the raw JSON file itself needs to get into `raw_json_l
 
 * **Server-Side LOB Binding Script:** [`sql/02_load_spotify_json_to_clob.sql`](sql/02_load_spotify_json_to_clob.sql)
 
-![Load Spotify JSON To CLOB Validation Script](screenshots/sql-step-2-server-side-lob-binding-img.png)
+![Load Spotify JSON To CLOB Validation Script](screenshots/06-sql-step-2-server-side-lob-binding-img.png)
 
 **JSON-to-Relational Parsing:**
 
@@ -247,12 +247,16 @@ Evaluated the native relational database engine `JSON_TABLE` function to extract
 
 **Parallel Parsing Query Script:** [`sql/03_spotify_json_staging.sql`](sql/03_spotify_json_staging.sql)
 
+![Parallel Parsing Query Validation Script](screenshots/07-sql-step-3-json-to-relational-parsing-img.png)
 
 **Validation:**
 
 A few sanity checks confirm the load and parse steps worked as expected before moving on to Star Schema design.
 
 **Staging Relational Environment Validation Script:** [`sql/04_oracle_staging_validation.sql`](sql/04_oracle_staging_validation.sql)
+
+![Staging Relational Environment Validation Script](screenshots/08-sql-step-4-staging-layer-validation-img.png)
+
 
 ## 7. Core Star Schema DDL Design
 
@@ -390,7 +394,7 @@ To optimize typical star-schema BI queries (date filters + dimension joins):
 
 * **Star Schema DDL Script:** [`sql/05_star_schema_ddl.sql`](sql/05_star_schema_ddl.sql)
 
-![Dimensional Data Model](screenshots/07-data-model.png)
+![Dimensional Data Model](screenshots/09-sql-ddl-star-schema-topology-img.png)
 
 ---
 
