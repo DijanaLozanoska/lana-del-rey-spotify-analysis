@@ -239,6 +239,8 @@ With the tables in place, the raw JSON file itself needs to get into `raw_json_l
 
 * **Server-Side LOB Binding Script:** [`sql/02_load_spotify_json_to_clob.sql`](sql/02_load_spotify_json_to_clob.sql)
 
+![Load Spotify JSON To CLOB Validation Script](screenshots/sql-step-2-server-side-lob-binding-img.png)
+
 **JSON-to-Relational Parsing:**
 
 Evaluated the native relational database engine `JSON_TABLE` function to extract structured fields out of the scalar JSON array. The relational stage parses 15,000+ data rows instantly with near-zero client processing overhead.
@@ -254,17 +256,143 @@ A few sanity checks confirm the load and parse steps worked as expected before m
 
 ## 7. Core Star Schema DDL Design
 
-The validated staging data is modelled into a dimensional star schema — one central fact table surrounded by descriptive dimension tables, optimized for BI/analytics tooling such as Power BI.
+The validated staging data is modelled into a dimensional **star schema** — one central fact table surrounded by descriptive dimension tables optimized for BI/analytics tooling such as Power BI.
 
-Schema Overview
-1 Fact table — granular, event-level streaming records
-3 Dimension tables — descriptive context (songs, albums, platforms)
+### Schema Overview
 
+- **1 Fact table** — granular, event-level streaming records
+- **3 Dimension tables** — descriptive context (songs, albums, platforms)
 
+```
+    dim_albums
+                     │
+                     │
+dim_platforms ── fact_streaming_history ── dim_songs
+```
 
+Technically this is closer to a **snowflake schema**, since `dim_songs` also references `dim_albums` directly (a song belongs to an album, independent of any given play event). This extra layer of normalization keeps album metadata from being duplicated across every song row.
 
+### Entity Relationship Diagram
 
+```mermaid
+erDiagram
+    DIM_ALBUMS ||--o{ DIM_SONGS : "contains"
+    DIM_ALBUMS ||--o{ FACT_STREAMING_HISTORY : "played from"
+    DIM_SONGS ||--o{ FACT_STREAMING_HISTORY : "played as"
+    DIM_PLATFORMS ||--o{ FACT_STREAMING_HISTORY : "streamed on"
 
+    DIM_ALBUMS {
+        number album_id PK
+        varchar2 album_name
+        number release_year
+        varchar2 era
+        number total_tracks
+        date created_at
+    }
+
+    DIM_SONGS {
+        number song_id PK
+        varchar2 track_name
+        number album_id FK
+        number duration_ms
+        number track_number
+        char is_explicit
+    }
+
+    DIM_PLATFORMS {
+        number platform_id PK
+        varchar2 raw_platform
+        varchar2 clean_platform
+        varchar2 os_name
+    }
+
+    FACT_STREAMING_HISTORY {
+        number stream_id PK
+        number song_id FK
+        number album_id FK
+        number platform_id FK
+        timestamp played_at
+        date play_date
+        number ms_played
+        number minutes_played
+        number skipped_flag
+        number shuffle_flag
+    }
+```
+
+### Tables
+
+#### `dim_albums` — Albums & Eras
+Stores album-level metadata, including a custom "era" tag for grouping albums into stylistic/chronological periods (e.g. *Born to Die era*, *Norman Fucking Rockwell! era*).
+
+| Column | Type | Notes |
+|---|---|---|
+| `album_id` | NUMBER (PK) | Auto-generated identity |
+| `album_name` | VARCHAR2(100) | Required |
+| `release_year` | NUMBER(4) | Constrained to 1900–2100 |
+| `era` | VARCHAR2(50) | Custom grouping label |
+| `total_tracks` | NUMBER | |
+| `created_at` | DATE | Defaults to `SYSDATE` |
+
+#### `dim_songs` — Deduplicated Songs / Tracks
+One row per unique track, linked back to its parent album.
+
+| Column | Type | Notes |
+|---|---|---|
+| `song_id` | NUMBER (PK) | Auto-generated identity |
+| `track_name` | VARCHAR2(200) | Required |
+| `album_id` | NUMBER (FK) | References `dim_albums` |
+| `duration_ms` | NUMBER | Track length in milliseconds |
+| `track_number` | NUMBER | |
+| `is_explicit` | CHAR(1) | `'Y'`/`'N'` flag |
+
+#### `dim_platforms` — Client Platforms & Operating Systems
+Normalizes the raw platform strings from the streaming export data into clean, analysis-friendly categories.
+
+| Column | Type | Notes |
+|---|---|---|
+| `platform_id` | NUMBER (PK) | Auto-generated identity |
+| `raw_platform` | VARCHAR2(100) | Original string, unique |
+| `clean_platform` | VARCHAR2(30) | Normalized: `mobile` / `desktop` / `web` / `partner` |
+| `os_name` | VARCHAR2(30) | e.g. `OS X`, `iOS`, `Windows`, `Chrome` |
+
+#### `fact_streaming_history` — Granular Streaming Events
+The core fact table — one row per individual streaming event.
+
+| Column | Type | Notes |
+|---|---|---|
+| `stream_id` | NUMBER (PK) | Always-generated identity |
+| `song_id` | NUMBER (FK) | References `dim_songs` |
+| `album_id` | NUMBER (FK) | References `dim_albums` |
+| `platform_id` | NUMBER (FK) | References `dim_platforms` |
+| `played_at` | TIMESTAMP(6) | Exact playback timestamp |
+| `play_date` | DATE | Date key, used for partitioning & calendar joins |
+| `ms_played` | NUMBER | Milliseconds played |
+| `minutes_played` | NUMBER(10,3) | **Computed column**: `ms_played / 60000`, rounded |
+| `skipped_flag` | NUMBER(1) | `0`/`1` |
+| `shuffle_flag` | NUMBER(1) | `0`/`1` |
+
+**Partitioning:** Range-partitioned on `play_date` with monthly auto-intervals (`INTERVAL (NUMTOYMINTERVAL(1, 'MONTH'))`), starting from an initial partition covering everything before `2021-01-01`. This keeps the fact table performant as history accumulates and prunes cleanly on date-range queries.
+
+### Indexes
+
+To optimize typical star-schema BI queries (date filters + dimension joins):
+
+- `idx_fact_play_date` — speeds up date-range filtering/reporting
+- `idx_fact_song_fk` / `idx_fact_album_fk` — speeds up joins back to dimensions
+- `idx_songs_search` — function-based index on `UPPER(track_name)` for case-insensitive song search
+
+### Data Integrity
+
+- Foreign keys enforce referential integrity between the fact table and all three dimensions.
+- `CHECK` constraints validate flag columns (`skipped_flag`, `shuffle_flag`, `is_explicit`) and bound `release_year` to a sane range.
+- Tables are dropped in **topological order** (fact before dimensions) via a `PL/SQL` block at the top of the script, making the DDL safely re-runnable during development.
+
+* **Star Schema DDL Script:** [`sql/05_star_schema_ddl.sql`](sql/05_star_schema_ddl.sql)
+
+![Dimensional Data Model](screenshots/07-data-model.png)
+
+---
 
 ## 8. Database Programming (PL/SQL Transformation Layer)
 
