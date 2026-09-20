@@ -256,7 +256,7 @@ A few sanity checks confirm the load and parse steps worked as expected before m
 
 ## 7. Core Star Schema DDL Design
 
-The validated staging data is modelled into a dimensional **star schema** — one central fact table surrounded by descriptive dimension tables optimized for BI/analytics tooling such as Power BI.
+The validated staging data is modelled into a dimensional star schema one central fact table surrounded by descriptive dimension tables optimized for BI/analytics tooling such as Power BI.
 
 ### Schema Overview
 
@@ -264,13 +264,13 @@ The validated staging data is modelled into a dimensional **star schema** — on
 - **3 Dimension tables** — descriptive context (songs, albums, platforms)
 
 ```
-    dim_albums
+                 dim_albums
                      │
                      │
 dim_platforms ── fact_streaming_history ── dim_songs
 ```
 
-Technically this is closer to a **snowflake schema**, since `dim_songs` also references `dim_albums` directly (a song belongs to an album, independent of any given play event). This extra layer of normalization keeps album metadata from being duplicated across every song row.
+Technically this is closer to a snowflake schema, since `dim_songs` also references `dim_albums` directly (a song belongs to an album, independent of any given play event). This extra layer of normalization keeps album metadata from being duplicated across every song row.
 
 ### Entity Relationship Diagram
 
@@ -322,7 +322,7 @@ erDiagram
 
 ### Tables
 
-#### `dim_albums` — Albums & Eras
+#### `dim_albums` - Albums & Eras
 Stores album-level metadata, including a custom "era" tag for grouping albums into stylistic/chronological periods (e.g. *Born to Die era*, *Norman Fucking Rockwell! era*).
 
 | Column | Type | Notes |
@@ -334,7 +334,7 @@ Stores album-level metadata, including a custom "era" tag for grouping albums in
 | `total_tracks` | NUMBER | |
 | `created_at` | DATE | Defaults to `SYSDATE` |
 
-#### `dim_songs` — Deduplicated Songs / Tracks
+#### `dim_songs` - Deduplicated Songs / Tracks
 One row per unique track, linked back to its parent album.
 
 | Column | Type | Notes |
@@ -346,7 +346,7 @@ One row per unique track, linked back to its parent album.
 | `track_number` | NUMBER | |
 | `is_explicit` | CHAR(1) | `'Y'`/`'N'` flag |
 
-#### `dim_platforms` — Client Platforms & Operating Systems
+#### `dim_platforms` - Client Platforms & Operating Systems
 Normalizes the raw platform strings from the streaming export data into clean, analysis-friendly categories.
 
 | Column | Type | Notes |
@@ -356,7 +356,7 @@ Normalizes the raw platform strings from the streaming export data into clean, a
 | `clean_platform` | VARCHAR2(30) | Normalized: `mobile` / `desktop` / `web` / `partner` |
 | `os_name` | VARCHAR2(30) | e.g. `OS X`, `iOS`, `Windows`, `Chrome` |
 
-#### `fact_streaming_history` — Granular Streaming Events
+#### `fact_streaming_history` - Granular Streaming Events
 The core fact table — one row per individual streaming event.
 
 | Column | Type | Notes |
@@ -378,9 +378,9 @@ The core fact table — one row per individual streaming event.
 
 To optimize typical star-schema BI queries (date filters + dimension joins):
 
-- `idx_fact_play_date` — speeds up date-range filtering/reporting
-- `idx_fact_song_fk` / `idx_fact_album_fk` — speeds up joins back to dimensions
-- `idx_songs_search` — function-based index on `UPPER(track_name)` for case-insensitive song search
+- `idx_fact_play_date` - speeds up date-range filtering/reporting
+- `idx_fact_song_fk` / `idx_fact_album_fk` - speeds up joins back to dimensions
+- `idx_songs_search` - function-based index on `UPPER(track_name)` for case-insensitive song search
 
 ### Data Integrity
 
