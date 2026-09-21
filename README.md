@@ -71,8 +71,8 @@ spotify-advanced-data-analytics/
 │   ├── 03_spotify_json_staging.sql
 │   ├── 04_oracle_staging_validation.sql
 │   ├── 05_star_schema_ddl.sql
-│   ├── 06_
-│   └── 07_analysis_queries.sql (posle vo materialized views)
+│   ├── 06_pkg_spotify_etl.sql
+│   └── 07_analysis_queries.sql 
 │
 ├── powerbi/
 │   ├── dax-measures.txt
@@ -80,16 +80,20 @@ spotify-advanced-data-analytics/
 │
 ├── screenshots/
 │   ├── 01-raw-data.png
-│   ├── 02-python-cleaning.png
-│   ├── 03-python-validation.png
-│   ├── 04-docker-file-transfer.png
+│   ├── 02-clean-spotify-json-img.png
+│   ├── 03-validate-spotify-json-img.png
+│   ├── 04-docker-and-oracle-data-ingestion-img.png
 │   ├── 05-sql-step-1-staging-table-setup-img.png
-│   ├── 06-
-│   ├── 07-
-│   ├── 08-
-│   ├── oracle-staging.png
-│   ├── data-model.png
-│   └── powerbi-dashboard.png
+│   ├── 06-sql-step-2-server-side-lob-binding-img.png
+│   ├── 07-sql-step-3-json-to-relational-parsing-img.png
+│   ├── 08-sql-step-4-staging-layer-validation-img.png
+│   ├── 09-sql-ddl-star-schema-topology-img.png
+│   ├── 10-sql-etl-package-run-img.png
+│   ├── 12-powerbi-main-dashboard-img.png
+│   ├── 13-powerbi-detail-1-dashboard-img.png
+│   ├── 14-powerbi-detail-2-dashboard-img.png
+│   ├── 15-powerbi-detail-3-dashboard-img.png
+│   └── 16-powerbi-detail-4-dashboard-img.png
 │
 └── README.md
 
@@ -400,41 +404,21 @@ To optimize typical star-schema BI queries (date filters + dimension joins):
 
 ## 8. Database Programming (PL/SQL Transformation Layer)
 
-<!--
+With `spotify_json_staging populated`, a dedicated Oracle package `pkg_spotify_etl` takes over to seed the dimensional model, canonicalize inconsistent source data and load the analytical fact table.
 
-## 7. JSON to Relational Mapping
+* **ETL Package script:** [`sql/06_pkg_spotify_etl.sql`](sql/06_pkg_spotify_etl.sql) 
 
-Leveraging Oracle’s native `JSON_TABLE` relational expression engine, the static JSON array layout is broken down and mapped dynamically into relational database table rows.
-
-* **Step 1 — Staging Table Setup Script:** 
-
-
-### Relational Staging Layout
-The target relational columns correspond directly to the source attributes:
-
-da se dodade screenshot
-
-This persistent, relational staging baseline serves as the raw source of truth for all subsequent SQL transformations and PL/SQL dimensional modeling workflows.
+![ETL Package](screenshots/10-sql-etl-package-run-img.png) 
 
 ---
 
+## 9. Power BI Dashboard
+
+In progress. This section will document the Power BI data model, key DAX measures and the final interactive dashboard.
+
+* **Analysis Queries:**  [`sql/07_analysis_queries.sql`](sql/07_analysis_queries.sql) 
 
 
-
-## 📂 Dataset
-
-Main objective is to keep only artist Lana Del Rey records in the JSON file and remove private metadata.
-
----
-
-## 🛠️  1. Data Cleaning — Visual Studio Code
-
-### Data Cleaning Process
-![Data Cleaning Process](2.scripts/clean-spotify-json-img.png)
-
-### Data Validation
-![Data Validation Process](2,scripts/validate-spotify-json-img.png)
--->
 ---
 
 ## 👩🏻‍💻 Author
