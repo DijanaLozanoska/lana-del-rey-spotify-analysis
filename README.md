@@ -91,11 +91,11 @@ spotify-advanced-data-analytics/
 │   ├── 08-sql-step-4-staging-layer-validation-img.png
 │   ├── 09-sql-ddl-star-schema-topology-img.png
 │   ├── 10-sql-etl-package-run-img.png
-│   ├── 12-powerbi-main-dashboard-img.png
-│   ├── 13-powerbi-detail-1-dashboard-img.png
-│   ├── 14-powerbi-detail-2-dashboard-img.png
-│   ├── 15-powerbi-detail-3-dashboard-img.png
-│   └── 16-powerbi-detail-4-dashboard-img.png
+│   ├── 11-powerbi-main-dashboard-img.png
+│   ├── 12-powerbi-detail-1-dashboard-img.png
+│   ├── 13-powerbi-detail-2-dashboard-img.png
+│   ├── 14-powerbi-detail-3-dashboard-img.png
+│   └── 15-powerbi-detail-4-dashboard-img.png
 │
 └── README.md
 
