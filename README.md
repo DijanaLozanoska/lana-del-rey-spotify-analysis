@@ -443,19 +443,27 @@ Spotify's export data isn't consistent — the same album can appear under sever
 
 Every streaming event loaded into `fact_streaming_history` is also flagged:
 
-- **`skipped_flag`** — set when Spotify's own `skipped` field is `true`, *or* the track played for less than 30 seconds.
-- **`shuffle_flag`** — set when Spotify's `shuffle` field is `true`.
+- **`skipped_flag`** - set when Spotify's own `skipped` field is `true`, *or* the track played for less than 30 seconds.
+- **`shuffle_flag`** - set when Spotify's `shuffle` field is `true`.
 
 ### Running the Package
 
-```sql
-BEGIN
-    pkg_spotify_etl.seed_static_dimensions;
-    pkg_spotify_etl.deduplicate_and_merge_albums;
-    pkg_spotify_etl.execute_fact_transform;
-END;
-/
-```
+The package is designed to run conceptually in this order:
+
+Step 1: Seed dimensions
+Creates the canonical reference album and song records.
+
+Step 2: Normalize staging data
+Applies album standardization rules to:
+
+spotify_json_staging
+
+Step 3: Transform fact data
+Loads standardized listening events into:
+
+fact_streaming_history
+
+and creates/updates platform dimension values.
 
 > **Design Architecture Decision:** The three procedures must run in this order. `seed_static_dimensions` populates `dim_albums`/`dim_songs` that later join-based inserts depend on; `deduplicate_and_merge_albums` must run before `execute_fact_transform`, since the fact load joins staging to the dimensions on exact album/track name matches.
 
