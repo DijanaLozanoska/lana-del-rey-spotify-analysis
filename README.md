@@ -439,14 +439,14 @@ Spotify's export data isn't consistent — the same album can appear under sever
 | `os x` | `desktop` | `macOS` |
 | *(anything else)* | `web_player` | `Web App` |
 
-### 8.5 Event Flagging
+### Event Flagging
 
 Every streaming event loaded into `fact_streaming_history` is also flagged:
 
 - **`skipped_flag`** — set when Spotify's own `skipped` field is `true`, *or* the track played for less than 30 seconds.
 - **`shuffle_flag`** — set when Spotify's `shuffle` field is `true`.
 
-### 8.6 Running the Package
+### Running the Package
 
 ```sql
 BEGIN
@@ -465,7 +465,13 @@ This procedural, package-based ETL layer replaces ad-hoc SQL scripts with a sing
 
 ---
 
-## 9. Power BI Dashboard
+## 9. SQL Analytical Queries and BI Integration Layer 
+
+In progress. This section will document analytical star-schema SQL queries.
+
+---
+
+## 10. Power BI Dashboard
 
 In progress. This section will document the Power BI data model, key DAX measures and the final interactive dashboard.
 
