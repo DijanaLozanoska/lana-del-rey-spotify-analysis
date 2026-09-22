@@ -5,17 +5,19 @@
 `Python` • `Docker` • `Oracle SQL` • `Star Schema Modelling` • `ETL` • `Power BI` • `DAX`
 
 ---
-## 📌 Project overview
+
+## Project overview
 
 This project presents an end-to-end analysis of Lana Del Rey listening activity using my own personal Spotify Extended Streaming History data, transforming raw JSON data into a dimensional data warehouse in Oracle SQL and an interactive Power BI dashboard. 
+
+The main analytical focus is Lana Del Rey listening behaviour, with the Oracle layer responsible for standardizing source data and preparing it for Power BI.
 
 The project follows this general architecture:  
 
 ```
-Spotify Extended Streaming History
-                │
-                ▼
-        Raw JSON Data
+
+   Spotify Extended Streaming History
+         Raw JSON Data
                 │
                 ▼
      Python Data Cleaning
@@ -53,19 +55,19 @@ Spotify Extended Streaming History
       Interactive Dashboard
 ```
 
-## 📂 Project Structure
+## Project Structure
 
 ```
 spotify-advanced-data-analytics/
 │
-├── datasets/
+├── 📂 datasets/
 │   └── Streaming_History_Audio_2021_LANA_DEL_REY_CLEAN.json
 │
-├── python/
+├── 📂 python/
 │   ├── clean_spotify_json.py
 │   └── validate_spotify_json.py
 │
-├── sql/
+├── 📂 sql/
 │   ├── 01_staging_tables_setup.sql
 │   ├── 02_load_spotify_json_to_clob.sql
 │   ├── 03_spotify_json_staging.sql
@@ -74,12 +76,12 @@ spotify-advanced-data-analytics/
 │   ├── 06_pkg_spotify_etl.sql
 │   └── 07_analysis_queries.sql 
 │
-├── powerbi/
+├── 📂 powerbi/
 │   ├── dax-measures.txt
 │   └── Spotify_Lana_Del_Rey_Analysis.pbix
 │
-├── screenshots/
-│   ├── 01-raw-data.png
+├── 📂 screenshots/
+│   ├── 01-raw-json-data-img.png
 │   ├── 02-clean-spotify-json-img.png
 │   ├── 03-validate-spotify-json-img.png
 │   ├── 04-docker-and-oracle-data-ingestion-img.png
@@ -103,7 +105,7 @@ spotify-advanced-data-analytics/
 ---
 
 
-## 1. 🛠️ Technologies Used
+## 1. Technology Stack
 
 | Technology | Purpose |
 | :--- | :--- |
@@ -118,28 +120,15 @@ spotify-advanced-data-analytics/
 | **DAX** |	Analytical measures and calculations |
 | **GitHub** |	Version control and portfolio documentation |
 
+---
+
 ## 2. Data Source
 
-The project uses Spotify Extended Streaming History data.
+The original Spotify listening history is semi-structured JSON containing individual listening events.
 
-The original source contains individual listening events with information such as:
+The raw Spotify data contains records beyond the scope of this analysis, therefore a Python preprocessing stage was implemented before loading the analytical dataset into Oracle. The project is designed around a cleaned Spotify listening-history dataset.
 
-da se dodade od raw data screenshot
-<!--
-* **Timestamp**
-* **Platform**
-* **Playback duration**
-* **Country**
-* **Track**
-* **Artist**
-* **Album**
-* **Playback start reason**
-* **Playback end reason**
-* **Shuffle status**
-* **Skip status**
--->
-
-The raw Spotify data contains records beyond the scope of this analysis, therefore a Python preprocessing stage was implemented before loading the analytical dataset into Oracle.
+![Raw Data](screenshots/01-raw-json-data-img.png)
 
 ---
 
@@ -182,6 +171,7 @@ The resulting dataset is trimmed down to 11 core fields:
 > **Execution Telemetry:** Upon completion, the script outputs runtime metrics detailing the *Original record count*, *Selected artist*, *Retained vs. removed records*, and the *Target output destination*.
 
 ![Python Data Cleaning Script](screenshots/02-clean-spotify-json-img.png)
+
 ---
 
 ## 4. Data Validation
@@ -211,6 +201,7 @@ When executed, the validation harness outputs the following status checks:
 * **Python Validation Script:** [`python/validate_spotify_json.py`](python/validate_spotify_json.py)
 
 ![Data Validation Harness](screenshots/03-validate-spotify-json-img.png)
+
 ---
 
 ## 5. Docker and Oracle Data Ingestion
@@ -279,54 +270,6 @@ dim_platforms ── fact_streaming_history ── dim_songs
 ```
 
 Technically this is closer to a snowflake schema, since `dim_songs` also references `dim_albums` directly (a song belongs to an album, independent of any given play event). This extra layer of normalization keeps album metadata from being duplicated across every song row.
-
-### Entity Relationship Diagram
-
-```mermaid
-erDiagram
-    DIM_ALBUMS ||--o{ DIM_SONGS : "contains"
-    DIM_ALBUMS ||--o{ FACT_STREAMING_HISTORY : "played from"
-    DIM_SONGS ||--o{ FACT_STREAMING_HISTORY : "played as"
-    DIM_PLATFORMS ||--o{ FACT_STREAMING_HISTORY : "streamed on"
-
-    DIM_ALBUMS {
-        number album_id PK
-        varchar2 album_name
-        number release_year
-        varchar2 era
-        number total_tracks
-        date created_at
-    }
-
-    DIM_SONGS {
-        number song_id PK
-        varchar2 track_name
-        number album_id FK
-        number duration_ms
-        number track_number
-        char is_explicit
-    }
-
-    DIM_PLATFORMS {
-        number platform_id PK
-        varchar2 raw_platform
-        varchar2 clean_platform
-        varchar2 os_name
-    }
-
-    FACT_STREAMING_HISTORY {
-        number stream_id PK
-        number song_id FK
-        number album_id FK
-        number platform_id FK
-        timestamp played_at
-        date play_date
-        number ms_played
-        number minutes_played
-        number skipped_flag
-        number shuffle_flag
-    }
-```
 
 ### Tables
 
@@ -404,11 +347,121 @@ To optimize typical star-schema BI queries (date filters + dimension joins):
 
 ## 8. Database Programming (PL/SQL Transformation Layer)
 
-With `spotify_json_staging populated`, a dedicated Oracle package `pkg_spotify_etl` takes over to seed the dimensional model, canonicalize inconsistent source data and load the analytical fact table.
+With `spotify_json_staging` populated, a dedicated Oracle package — `pkg_spotify_etl` — takes over to seed the dimensional model, canonicalize inconsistent source data, and load the analytical fact table.
 
 * **ETL Package script:** [`sql/06_pkg_spotify_etl.sql`](sql/06_pkg_spotify_etl.sql) 
 
+### Package Procedures
+
+| Procedure | Responsibility |
+| --------- | -------------- |
+| `seed_static_dimensions` | Seeds the canonical `dim_albums` and `dim_songs` reference rows used to resolve every streaming event |
+| `deduplicate_and_merge_albums` | Canonicalizes inconsistent album names in `spotify_json_staging` before the fact load |
+| `execute_fact_transform` | Auto-registers new listening platforms, then loads cleaned, joined records into `fact_streaming_history` |
+
+### Star Schema
+
+| Table | Role | Key Columns |
+| ----- | ---- | ------------ |
+| `spotify_json_staging` | Raw landing zone from the JSON-to-relational mapping stage | `track_name`, `album_name`, `platform`, `timestamp_str`, `ms_played`, `skipped`, `shuffle` |
+| `dim_albums` | Canonical album dimension | `album_id`, `album_name`, `release_year`, `era`, `total_tracks` |
+| `dim_songs` | Canonical song dimension, linked to albums | `song_id`, `track_name`, `album_id`, `duration_ms`, `track_number`, `is_explicit` |
+| `dim_platforms` | Auto-populated listening platform dimension | `platform_id`, `raw_platform`, `clean_platform`, `os_name` |
+| `fact_streaming_history` | One row per streaming event | `song_id`, `album_id`, `platform_id`, `played_at`, `play_date`, `ms_played`, `skipped_flag`, `shuffle_flag` |
+
+### Entity Relationship Diagram
+
+```mermaid
+erDiagram
+    DIM_ALBUMS ||--o{ DIM_SONGS : "contains"
+    DIM_ALBUMS ||--o{ FACT_STREAMING_HISTORY : "played from"
+    DIM_SONGS ||--o{ FACT_STREAMING_HISTORY : "played as"
+    DIM_PLATFORMS ||--o{ FACT_STREAMING_HISTORY : "streamed on"
+
+    DIM_ALBUMS {
+        number album_id PK
+        varchar2 album_name
+        number release_year
+        varchar2 era
+        number total_tracks
+        date created_at
+    }
+
+    DIM_SONGS {
+        number song_id PK
+        varchar2 track_name
+        number album_id FK
+        number duration_ms
+        number track_number
+        char is_explicit
+    }
+
+    DIM_PLATFORMS {
+        number platform_id PK
+        varchar2 raw_platform
+        varchar2 clean_platform
+        varchar2 os_name
+    }
+
+    FACT_STREAMING_HISTORY {
+        number stream_id PK
+        number song_id FK
+        number album_id FK
+        number platform_id FK
+        timestamp played_at
+        date play_date
+        number ms_played
+        number minutes_played
+        number skipped_flag
+        number shuffle_flag
+    }
+```
+
+### Album Normalization Logic
+
+Spotify's export data isn't consistent — the same album can appear under several names depending on edition, remix, or soundtrack tagging. `deduplicate_and_merge_albums` handles the known cases before the fact load, since unmerged variants simply won't join and would otherwise be silently dropped from `fact_streaming_history`:
+
+| Raw variant(s) in staging | Normalized to |
+| ------------------------- | ------------- |
+| Any album name containing "Born To Die" (deluxe, paradise edition, etc.) | `Born To Die` |
+| `Arcadia` | `Blue Banisters` |
+| `Let Me Love You Like A Woman` (self-titled single) | `Chemtrails Over The Country Club` |
+| *The Great Gatsby* soundtrack, *Summertime Sadness* remix, *Young And Beautiful* | `Other Lana Del Rey (Soundtracks and Remixes)` |
+
+### Platform Normalization Logic
+
+`execute_fact_transform` dynamically detects any raw platform strings not yet in `dim_platforms` and buckets them into a consistent taxonomy before the MERGE:
+
+| Raw platform contains | Clean platform | OS name |
+| ---------------------- | --------------- | ------- |
+| `iphone`, `ios`, `ipad` | `mobile` | `iOS` |
+| `windows` | `desktop` | `Windows` |
+| `os x` | `desktop` | `macOS` |
+| *(anything else)* | `web_player` | `Web App` |
+
+### 8.5 Event Flagging
+
+Every streaming event loaded into `fact_streaming_history` is also flagged:
+
+- **`skipped_flag`** — set when Spotify's own `skipped` field is `true`, *or* the track played for less than 30 seconds.
+- **`shuffle_flag`** — set when Spotify's `shuffle` field is `true`.
+
+### 8.6 Running the Package
+
+```sql
+BEGIN
+    pkg_spotify_etl.seed_static_dimensions;
+    pkg_spotify_etl.deduplicate_and_merge_albums;
+    pkg_spotify_etl.execute_fact_transform;
+END;
+/
+```
+
+> **Design Architecture Decision:** The three procedures must run in this order. `seed_static_dimensions` populates `dim_albums`/`dim_songs` that later join-based inserts depend on; `deduplicate_and_merge_albums` must run before `execute_fact_transform`, since the fact load joins staging to the dimensions on exact album/track name matches.
+
 ![ETL Package](screenshots/10-sql-etl-package-run-img.png) 
+
+This procedural, package-based ETL layer replaces ad-hoc SQL scripts with a single, re-runnable, auditable unit of transformation logic — the final step before the dimensional model is ready for SQL analysis and the Power BI dashboard.
 
 ---
 
@@ -417,7 +470,6 @@ With `spotify_json_staging populated`, a dedicated Oracle package `pkg_spotify_e
 In progress. This section will document the Power BI data model, key DAX measures and the final interactive dashboard.
 
 * **Analysis Queries:**  [`sql/07_analysis_queries.sql`](sql/07_analysis_queries.sql) 
-
 
 ---
 
